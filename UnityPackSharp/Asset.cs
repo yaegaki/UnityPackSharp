@@ -85,6 +85,14 @@ namespace UnityPackSharp
                 RegisterObject(obj);
             }
 
+            // Unknown
+            if (this.Format >= 15)
+            {
+                var unkCount = reader.ReadInt32(this.bigendian);
+                reader.Align(4);
+                reader.ReadBytes(unkCount * 0xc);
+            }
+
             if (this.Format >= 6)
             {
                 var numRefs = reader.ReadInt32(this.bigendian);
