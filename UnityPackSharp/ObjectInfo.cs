@@ -22,7 +22,7 @@ namespace UnityPackSharp
         }
 
         private int dataOffset;
-        private int size;
+        private int dataSize;
 
         internal ObjectInfo(Asset asset)
         {
@@ -44,7 +44,7 @@ namespace UnityPackSharp
             }
 
             this.dataOffset = reader.ReadInt32(bigendian);
-            this.size = reader.ReadInt32(bigendian);
+            this.dataSize = reader.ReadInt32(bigendian);
             if (format < 17)
             {
                 this.TypeId = reader.ReadInt32(bigendian);
@@ -80,6 +80,7 @@ namespace UnityPackSharp
             {
                 return null;
             }
+
             using (var ms = new MemoryStream(this.Asset.objectData))
             {
                 ms.Seek(this.dataOffset, SeekOrigin.Begin);
@@ -149,7 +150,7 @@ namespace UnityPackSharp
                         else if (firstChild != null && firstChild.IsArray)
                         {
                             needAlign = firstChild.IsArray;
-                            size = reader.ReadInt32(bigendian);
+                            var size = Math.Max(reader.ReadInt32(bigendian), 0);
                             var arrayType = firstChild.Children[1];
                             if (arrayType.Type == "char" || arrayType.Type == "UInt8")
                             {
