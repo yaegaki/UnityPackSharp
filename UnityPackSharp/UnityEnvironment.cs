@@ -1,11 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityPackSharp.Engine;
 
 namespace UnityPackSharp
 {
     public class UnityEnvironment
     {
         private Dictionary<string, AssetBundle> assetBundleDict = new Dictionary<string, AssetBundle>();
+        private List<IEngineObjectCreator> engineObjectCreators = new List<IEngineObjectCreator>()
+        {
+            EngineObjectCreator.Instance,
+        };
+
 
         public AssetBundle LoadAssetBundle(string path)
         {
@@ -46,6 +52,25 @@ namespace UnityPackSharp
         public Asset GetAssetByFileName(string filePath)
         {
             throw new NotImplementedException();
+        }
+
+        public void RegisterEngineObjectCreator(IEngineObjectCreator creator)
+        {
+            this.engineObjectCreators.Add(creator);
+        }
+
+        internal EngineObject CreateEngineObject(TypeTree typeTree, Dictionary<string, object> dict)
+        {
+            foreach (var creator in this.engineObjectCreators)
+            {
+                var obj = creator.CreateEngineObject(typeTree, dict);
+                if (obj != null)
+                {
+                    return obj;
+                }
+            }
+
+            return new EngineObject(typeTree, dict);
         }
     }
 }

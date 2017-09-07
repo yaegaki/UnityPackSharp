@@ -52,7 +52,10 @@
     <Compile Include="AssetRef.cs" />
     <Compile Include="BinaryReaderExtensions.cs" />
     <Compile Include="CompressionType.cs" />
+    <Compile Include="EngineObjectCreator.cs" />
     <Compile Include="Engine\EngineObject.cs" />
+    <Compile Include="Engine\TextAsset.cs" />
+    <Compile Include="IEngineObjectCreator.cs" />
     <Compile Include="ObjectInfo.cs" />
     <Compile Include="ObjectPointer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

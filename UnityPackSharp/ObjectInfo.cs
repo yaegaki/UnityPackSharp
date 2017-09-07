@@ -88,6 +88,12 @@ namespace UnityPackSharp
             }
         }
 
+        public TEngineObject ReadEngineObject<TEngineObject>()
+            where TEngineObject : EngineObject
+        {
+            return ReadEngineObject() as TEngineObject;
+        }
+
         private object ReadValue(TypeTree typeTree, BinaryReader reader)
         {
             var beforePos = reader.BaseStream.Position;
@@ -179,7 +185,8 @@ namespace UnityPackSharp
                             {
                                 dict[child.Name] = ReadValue(child, reader);
                             }
-                            result = new EngineObject(typeTree, dict);
+
+                            result = this.Asset.Bundle.Environment.CreateEngineObject(typeTree, dict);
                         }
                     }
                     break;
