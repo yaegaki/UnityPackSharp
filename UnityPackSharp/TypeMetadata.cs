@@ -96,6 +96,11 @@ namespace UnityPackSharp
 
         internal TypeTree FindType(int typeId)
         {
+            if (this.typeTreeDict == null)
+            {
+                return null;
+            }
+
             TypeTree tree;
             this.typeTreeDict.TryGetValue(typeId, out tree);
             return tree;
