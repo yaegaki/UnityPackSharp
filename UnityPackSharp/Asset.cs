@@ -53,6 +53,7 @@ namespace UnityPackSharp
                 return;
             }
 
+            var startPos = reader.BaseStream.Position;
             var metadataSize = reader.ReadInt32BE();
             var fileSize = reader.ReadInt32BE();
             this.Format = reader.ReadInt32BE();
@@ -106,7 +107,7 @@ namespace UnityPackSharp
 
             reader.ReadString();    // unknown
 
-            reader.BaseStream.Seek(objectDataOffset, SeekOrigin.Begin);
+            reader.BaseStream.Seek(objectDataOffset + startPos, SeekOrigin.Begin);
             this.objectData = reader.ReadBytes(fileSize - objectDataOffset);
         }
 
