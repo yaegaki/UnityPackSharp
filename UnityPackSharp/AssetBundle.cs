@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 
@@ -123,51 +124,51 @@ namespace UnityPackSharp
                 nodes.Add(Tuple.Create(offset, size, name));
             }
 
-            if (blocks.Count != nodes.Count)
+            using (var dataStream = new MemoryStream(blocks.Sum(b => b.UncompressedSize)))
             {
-                throw new NotSupportedException("blocks.Count != nodes.Count");
-            }
-
-            var assets = new List<Asset>();
-
-            for (var i = 0; i < blocks.Count; i++)
-            {
-                var block = blocks[i];
-                var node = nodes[i];
-                var name = node.Item3;
-
-                MemoryStream blockStream;
-                switch (block.CompressionType)
+                foreach (var block in blocks)
                 {
-                    case CompressionType.None:
-                        blockStream = new MemoryStream(mainReader.ReadBytes(block.CompressedSize));
-                        break;
-                    case CompressionType.LZMA:
-                        {
-                            var properties = mainReader.ReadBytes(5);
-                            var decoder = new SevenZip.Compression.LZMA.Decoder();
-                            blockStream = new MemoryStream(block.UncompressedSize);
-                            decoder.SetDecoderProperties(properties);
-                            decoder.Code(mainReader.BaseStream, blockStream, block.CompressedSize - 5, block.UncompressedSize, null);
-                            blockStream.Seek(0, SeekOrigin.Begin);
+                    switch (block.CompressionType)
+                    {
+                        case CompressionType.None:
+                            mainReader.BaseStream.CopyTo(dataStream, block.CompressedSize);
                             break;
-                        }
-                    case CompressionType.LZ4:
-                    case CompressionType.LZ4HC:
-                        {
-                            var decoded = LZ4.LZ4Codec.Decode(mainReader.ReadBytes(block.CompressedSize), 0, block.UncompressedSize, block.CompressedSize);
-                            blockStream = new MemoryStream(decoded);
-                            break;
-                        }
-                    default:
-                        throw new NotSupportedException("Not supported compression type : " + block.CompressionType);
+                        case CompressionType.LZMA:
+                            {
+                                var properties = mainReader.ReadBytes(5);
+                                var decoder = new SevenZip.Compression.LZMA.Decoder();
+                                decoder.SetDecoderProperties(properties);
+                                decoder.Code(mainReader.BaseStream, dataStream, block.CompressedSize - 5, block.UncompressedSize, null);
+                                break;
+                            }
+                        case CompressionType.LZ4:
+                        case CompressionType.LZ4HC:
+                            {
+                                var b = mainReader.ReadBytes(block.CompressedSize);
+                                var decoded = LZ4.LZ4Codec.Decode(b, 0, block.CompressedSize, block.UncompressedSize);
+                                dataStream.Write(decoded, 0, decoded.Length);
+                                break;
+                            }
+                        default:
+                            throw new NotSupportedException("Not supported compression type : " + block.CompressionType);
+                    }
                 }
 
-                assets.Add(new Asset(name, this, new BinaryReader(blockStream)));
-                blockStream.Dispose();
+                var assets = new List<Asset>(nodes.Count);
+
+                foreach (var node in nodes)
+                {
+                    var offset = node.Item1;
+                    var size = node.Item2;
+                    var name = node.Item3;
+                    dataStream.Seek(offset, SeekOrigin.Begin);
+
+                    assets.Add(new Asset(name, this, new BinaryReader(dataStream)));
+                }
+
+                this.Assets = assets;
             }
 
-            this.Assets = assets;
             if (this.Assets.Count == 0)
             {
                 this.Name = string.Empty;
