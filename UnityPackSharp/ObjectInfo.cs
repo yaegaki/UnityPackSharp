@@ -73,8 +73,14 @@ namespace UnityPackSharp
             }
         }
 
+        private EngineObject cache;
         public EngineObject ReadEngineObject()
         {
+            if (cache != null)
+            {
+                return cache;
+            }
+
             var typeTree = this.TypeTree;
             if (typeTree == null)
             {
@@ -84,7 +90,8 @@ namespace UnityPackSharp
             using (var ms = new MemoryStream(this.Asset.objectData))
             {
                 ms.Seek(this.dataOffset, SeekOrigin.Begin);
-                return ReadValue(typeTree, new BinaryReader(ms)) as EngineObject;
+                cache = ReadValue(typeTree, new BinaryReader(ms)) as EngineObject;
+                return cache;
             }
         }
 
