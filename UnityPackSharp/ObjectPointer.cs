@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using UnityPackSharp.Engine;
 
 namespace UnityPackSharp
 {
@@ -8,6 +9,8 @@ namespace UnityPackSharp
         public TypeTree TypeTree { get; private set; }
         public int FileId { get; private set; }
         public long PathId { get; private set; }
+
+        public bool IsNull { get { return PathId == 0; } }
 
         internal ObjectPointer(Asset source, TypeTree typeTree)
         {
@@ -40,6 +43,29 @@ namespace UnityPackSharp
             }
 
             return asset;
+        }
+
+        public EngineObject GetEngineObject()
+        {
+            return GetEngineObject<EngineObject>();
+        }
+
+        public T GetEngineObject<T>()
+            where T : EngineObject
+        {
+            var asset = GetAsset();
+            if (asset == null)
+            {
+                throw new System.Exception("not resolved");
+            }
+
+            var obj = asset.GetObjectByPathId(this.PathId);
+            if (obj == null)
+            {
+                throw new System.Exception("not resolved");
+            }
+
+            return obj.ReadEngineObject<T>();
         }
     }
 }

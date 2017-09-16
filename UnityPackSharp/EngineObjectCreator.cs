@@ -13,6 +13,10 @@ namespace UnityPackSharp
             {
                 case "TextAsset":
                     return new TextAsset(typeTree, dict);
+                case "GameObject":
+                    return new GameObject(typeTree, dict);
+                case "Transform":
+                    return new Transform(typeTree, dict);
                 default:
                     return null;
             }

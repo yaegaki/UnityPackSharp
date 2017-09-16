@@ -172,5 +172,12 @@ namespace UnityPackSharp
 
             return environment.GetAssetByFileName(filePath);
         }
+
+        public ObjectInfo GetObjectByPathId(long pathId)
+        {
+            ObjectInfo obj;
+            this.objectDict.TryGetValue(pathId, out obj);
+            return obj;
+        }
     }
 }
